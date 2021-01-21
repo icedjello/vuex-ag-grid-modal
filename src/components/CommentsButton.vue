@@ -1,26 +1,52 @@
 <template>
   <span>
-    <p style="display: inline">{{ price }}</p>
+    {{ price }}
     <button
-        v-if="comment"
         style="display: inline"
-    >❖</button>
+        v-on:click="onButtonClicked"
+    >{{ getButtonType }}</button>
   </span>
 </template>
 
 <script>
+
+import {store} from '@/Store';
+
 export default {
-  name: "CommentsRenderer",
+  name: "CommentsButton",
+  store,
   data() {
     return {
       price: null,
-      comment: null
+      comment: null,
+      id: null
     }
   },
   mounted() {
     this.price = this.params.value.price
-    this.comment = this.params.value.comment
+    this.id = this.params.data.id
   },
+  computed: {
+    currentRowData() {
+      return this.$store.state.rowData[this.id];
+    },
+    currentComment() {
+      return this.currentRowData?.multi?.comment;
+    },
+    getButtonType() {
+      const currentComment = this.currentComment
+      const hasComment = !(currentComment == '' || currentComment == undefined);
+      return hasComment ? '▼' : '▽'
+    }
+  },
+  methods: {
+    onButtonClicked() {
+      this.$store.commit('setEditingId', this.id);
+      this.$store.commit('changeShowModal', true)
+      console.log('from renderer button click, id:', this.$store.state.currentEditingId);
+
+    }
+  }
 }
 </script>
 

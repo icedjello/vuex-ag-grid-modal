@@ -1,28 +1,78 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="container">
+    <ag-grid-vue
+        style="width: 550px; height: 200px;"
+        class="ag-theme-alpine"
+        :columnDefs="columnDefs"
+        :rowData="rowData"
+        :gridOptions="gridOptions"
+    >
+    </ag-grid-vue>
+    <comments-popup
+        v-show="isModalVisible"
+        @close="closeModal"
+    ></comments-popup>
   </div>
+
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import {AgGridVue} from "ag-grid-vue";
+import CommentsButton from "./components/CommentsButton"
+
+import CommentsPopup from "@/components/CommentsPopup";
+import {store} from './Store';
 
 export default {
   name: 'App',
+  store,
+  data() {
+    return {
+      columnDefs: null,
+      rowData: null,
+      gridOptions: null,
+    }
+  },
+  computed: {
+    isModalVisible() {
+      return this.$store.state.showModal
+    }
+  },
   components: {
-    HelloWorld
+    CommentsPopup,
+    AgGridVue,
+    "commentsButton": CommentsButton
+  },
+  methods: {
+    showModal() {
+      this.$store.commit('changeShowModal', true);
+    },
+    closeModal() {
+      this.$store.commit("changeShowModal", false);
+      this.$store.commit('clearEditingId')
+    },
+  },
+  beforeMount() {
+    this.columnDefs = [
+      {field: 'make'},
+      {field: 'model'},
+      {
+        field: 'multi',
+        cellRendererFramework: "commentsButton",
+        headerTooltip: 'Click triangle to view/add/edit comment'
+      }
+    ];
+    this.rowData = this.$store.state.rowData;
+    this.gridOptions = {
+      context: {
+        componentParent: this
+      }
+    };
   }
 }
 </script>
 
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+@import "../node_modules/ag-grid-community/dist/styles/ag-grid.css";
+@import "../node_modules/ag-grid-community/dist/styles/ag-theme-alpine.css";
 </style>
